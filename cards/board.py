@@ -1,7 +1,7 @@
 import random
 
 from cards.card import Card, Cards
-from cards.players.human import HumanPlayer
+from cards.players.human import CMDHumanPlayer
 from cards.roles import RolesHolder
 from cards.round import Round
 
@@ -23,11 +23,13 @@ class Board:
 
         self.deck = Card.deck()
 
-    def start(self):
+    def play(self):
         self.playing = True
-        self.deal()
-        while len([1 for p in self.players if not p.won]) > 1:
-            self.play_turn()
+        try:
+            while True:
+                self.play_turn()
+        except NextRound:
+            return self.roles
 
     def deal(self):
         random.shuffle(self.deck)
@@ -73,7 +75,6 @@ class Board:
             if player.won:
                 role = self.roles.queue(player)
                 player.assign(role)
-                print(f"Assigned role {role} to player {player}")
 
             if not cards:
                 print(f"{player} folded, {len(rd.folded)} players are now folded")
@@ -85,10 +86,26 @@ class Board:
         self.leading_player = rd.winner
         print(f"Round finished, {self.leading_player} takes the round")
         i = self.players.index(self.leading_player)
+
+        not_won = [p for p in self.players if not p.won]
+        if len(not_won) == 1:
+            not_won[0].assign(self.roles.queue(not_won[0]))
+            print("Game finished")
+            print("President:", self.roles.PRESIDENT)
+            if self.roles.VICE_PRESIDENT: print("Vice President:", self.roles.VICE_PRESIDENT)
+            if self.roles.SERVITOR: print("Servitor:", self.roles.SERVITOR)
+            print("Labourer:", self.roles.LABOURER)
+            raise NextRound
+
         while self.leading_player.won:
-            self.leading_player = self.players[i + 1]
-            if i == len(self.players):
-                i = 0
+            try:
+                self.leading_player = self.players[i + 1]
+            except IndexError:
+                print(self.players, i)
+                i = -1
+                continue
+            if i == len(self.players) - 1:
+                i = -1
 
     def remove_cards(self, cards):
         for card in cards:
@@ -96,5 +113,6 @@ class Board:
 
 
 if __name__ == '__main__':
-    board = Board([HumanPlayer("1"), HumanPlayer("2"), HumanPlayer("3"), HumanPlayer("4")])
-    board.start()
+    board = Board([CMDHumanPlayer("Player 1"), CMDHumanPlayer("Player 2"), CMDHumanPlayer("Player 3"),
+                   CMDHumanPlayer("Player 4")])
+    board.deal()

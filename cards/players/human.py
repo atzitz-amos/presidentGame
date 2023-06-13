@@ -3,7 +3,14 @@ from cards.players.base import BasePlayer, PlayerType
 from cards.round import Round
 
 
-class HumanPlayer(BasePlayer):
+class CMDHumanPlayer(BasePlayer):
+    def choose_exchange(self, num):
+        print("Your hand is:", self.hand)
+        cards = []
+        while len(cards) != num:
+            cards = input(f"[Player {self}] Choose {num} cards to exchange: ").split()
+        return list(map(self.get_card, cards))
+
     def __init__(self, name):
         BasePlayer.__init__(self, name, PlayerType.HUMAN)
 
@@ -55,3 +62,11 @@ class HumanPlayer(BasePlayer):
 
     def format_last(self, rd: Round):
         return ", ".join([str(x) for x in (rd.cards[-1] if rd.cards else [])])
+
+    def assign(self, role):
+        super(CMDHumanPlayer, self).assign(role)
+        print(f"Assigned role {role} to player {self}")
+
+    def exchange(self, a, b):
+        super(CMDHumanPlayer, self).exchange(a, b)
+        print(f"[{self}] Exchanged cards `{a}` and `{b}`")

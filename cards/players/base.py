@@ -17,7 +17,7 @@ class BasePlayer:
         self.position = None
 
     def deal_cards(self, cards):
-        self.hand.extend(cards)
+        self.hand = cards
 
     def ask_cards(self, rd):
         return NotImplemented
@@ -33,4 +33,17 @@ class BasePlayer:
         return not self.hand
 
     def __str__(self):
-        return f"{self.name} ({self.ptype.value})"
+        return f"{self.name} ({self.ptype.value}){' [' + str(self.position) + ']' if self.position else ''}"
+
+    def best_cards(self, num):
+        hand = list(sorted(self.hand, reverse=True))
+        return hand[:num]
+
+    def choose_exchange(self, num):
+        raise NotImplementedError("Method `choose_exchange` was not implemented")
+
+    def exchange(self, a, b):
+        assert len(a) == len(b)
+        for i in range(len(a)):
+            self.hand.remove(a[i])
+            self.hand.append(b[i])
