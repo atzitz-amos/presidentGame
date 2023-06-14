@@ -65,6 +65,8 @@ class Board:
                 if not all([card in player.hand for card in cards]):
                     raise ValueError("Invalid cards, you do not have all of them")
                 rd.add(cards, player)
+                for pl in self.players:
+                    pl.notifyCard(player, cards)
             except ValueError as e:
                 player.notifyError(e)
                 continue
