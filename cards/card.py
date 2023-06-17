@@ -45,7 +45,10 @@ class Card:
         return list(Cards.all())
 
     def __eq__(self, other):
-        return self.value == other.value and self.ctype == other.ctype
+        return other.value == self.value and self.ctype == other.ctype
+
+    def __or__(self, other):
+        return self.value == other.value
 
     def __gt__(self, other):
         """ C_7 > C_6 -> True"""
@@ -59,6 +62,9 @@ class Card:
 
     def __le__(self, other):
         return other.value <= self.value
+
+    def __hash__(self):
+        return hash(self.value)
 
 
 class Cards:
@@ -103,4 +109,3 @@ class Cards:
     @staticmethod
     def all():
         return [v for k, v in Cards.__dict__.items() if not k.startswith('__') and k != "all"]
-

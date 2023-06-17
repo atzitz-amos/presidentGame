@@ -1,6 +1,7 @@
 import random
 
 from cards.card import Card, Cards
+from cards.players.bot import BotPlayer
 from cards.players.human import CMDHumanPlayer
 from cards.roles import RolesHolder
 from cards.round import Round
@@ -115,6 +116,6 @@ class Board:
 
 
 if __name__ == '__main__':
-    board = Board([CMDHumanPlayer("Player 1"), CMDHumanPlayer("Player 2"), CMDHumanPlayer("Player 3"),
+    board = Board([BotPlayer("Player 1"), CMDHumanPlayer("Player 2"), CMDHumanPlayer("Player 3"),
                    CMDHumanPlayer("Player 4")])
     board.deal()

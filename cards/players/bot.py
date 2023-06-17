@@ -9,13 +9,21 @@ def C(n, k):
 
 
 class BotPlayer(BasePlayer):
+    def deal_cards(self, cards):
+        super(BotPlayer, self).deal_cards(cards)
+
+        self.cards = list(Cards.all())
+        for card in cards:
+            self.cards.remove(card)
+
     def choose_exchange(self, num):
-        pass
+        return list(sorted(self.hand))[:num]
 
     def __init__(self, name):
         BasePlayer.__init__(self, name, PlayerType.BOT)
 
-        self.cards = []
+        self.players = []
+
         self.cards_players = {}
 
     def remove_cards(self, cards):
@@ -26,10 +34,31 @@ class BotPlayer(BasePlayer):
         print("Error: ", exc.args[0])
 
     def ask_cards(self, rd):
-        pass
+        if not rd:
+            return self.ask_cards_first(rd)
+        answers = self.possible_answers(rd[-1])
+        if not answers:
+            return []
+        total_score = self.score_hand(self.hand)
+        score_list = {total_score: []}
+        print(f"[{self}] Hand: {list(sorted(self.hand))}")
+        print("Score:", total_score)
+        print("Answers:", answers)
+        for answer in answers:
+            c = self.hand.copy()
+            [c.remove(a) for a in answer]
+            score = self.score_hand(c)
+            score_list[score] = answer
+        print("Playing:", score_list[min(score_list)])
+        return score_list[min(score_list)]
+
+    def notifyPlayer(self, player):
+        self.players.append(player)
 
     def notifyCard(self, player, cards):
-        self.cards.extend(cards)
+        if player == self:
+            return
+        [self.cards.remove(card) for card in cards]
         if player.name not in self.cards_players:
             self.cards_players[player.name] = []
         self.cards_players[player.name].append(cards)
@@ -38,15 +67,32 @@ class BotPlayer(BasePlayer):
         super(BotPlayer, self).assign(role)
         print(f"Assigned role {role} to bot {self}")
 
+    def possible_answers(self, last):
+        c = last[0]
+        amount = len(last)
+        res = []
+        already = []
+        for card in self.hand:
+            if card >= c and self.hand.count(card) >= amount and card.value not in already:
+                res.append([ca for ca in self.hand if ca == card][:amount])
+                already.append(card.value)
+        return res
+
     def exchange(self, a, b):
         super(BotPlayer, self).exchange(a, b)
         print(f"[{self}] Exchanged cards `{a}` and `{b}`")
 
+        for i in range(len(a)):
+            self.cards.append(a[i])
+            self.cards.remove(b[i])
+
     def probability(self, card, amount, cards, split=3):
-        if len(cards) < amount:
+        if cards.count(card) < amount or card not in cards:
             return 0
         if amount > split:
             return 0
+        if len(cards) <= split:
+            return 1
         return C(cards.count(card), amount) * C(len(cards) - cards.count(card), split - amount) / C(len(cards), split)
 
     def beatable_probability(self, card, amount, cards, split=3):
@@ -56,11 +102,48 @@ class BotPlayer(BasePlayer):
             probability = self.probability(card, amount, cards, split)
         for value in card_values:
             probability += self.probability(value, amount, cards, split)
-        return probability if probability < 1 else 1
+        return probability
 
+    def score(self, card, amount):
+        score = {}
+        last_scores = {}
+        for player in self.players:
+            if len(player.hand) in last_scores:
+                probability = last_scores[len(player.hand)]
+            else:
+                try:
+                    probability = self.beatable_probability(card, amount, [c.value for c in self.cards],
+                                                            split=len(player.hand))
+                except Exception:
+                    print(card, amount, [c.value for c in self.cards], len(player.hand))
+                    raise
+            last_scores[len(player.hand)] = probability
+            score[player] = probability
+        return score
 
-if __name__ == '__main__':
-    player = BotPlayer("B1")
-    cs = Cards.all()
-    # print(player.beatable_probability(CardValue.KING, 1, cs, split=9))
-    print(player.beatable_probability(CardValue.JACK, 4, [v.value for v in cs], split=4))
+    def score_hand(self, hand):
+        final_score = 0
+        data = {}
+        hand = [c.value for c in hand]
+        for card in set(hand):
+            scores = self.score(card, hand.count(card))
+            player_score = 0
+            for player, score in scores.items():
+                if player not in data:
+                    data[player] = {}
+                if score not in data[player]:
+                    data[player][score] = []
+                data[player][score].append((card, hand.count(card)))
+                player_score += score
+            final_score += player_score / len(scores)
+        res = {}
+        for player, scores in data.items():
+            res[player] = [(scores[k], k) for k in sorted(scores)]
+
+        return final_score
+
+    def ask_cards_first(self, rd):
+        hand = sorted(self.hand)
+        answer = [x for x in hand if x.value == hand[0].value]
+        print("Playing:", answer)
+        return answer

@@ -35,6 +35,8 @@ class BasePlayer:
     def __str__(self):
         return f"{self.name} ({self.ptype.value}){' [' + str(self.position) + ']' if self.position else ''}"
 
+    __repr__ = __str__
+
     def best_cards(self, num):
         hand = list(sorted(self.hand, reverse=True))
         return hand[:num]
@@ -49,4 +51,7 @@ class BasePlayer:
             self.hand.append(b[i])
 
     def notifyCard(self, player, cards):
+        pass
+
+    def notifyPlayer(self, player):
         pass

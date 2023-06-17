@@ -55,7 +55,7 @@ class CMDHumanPlayer(BasePlayer):
         print("Error: ", exc.args[0])
 
     def ask_cards(self, rd):
-        print("Your hand is", self.hand)
+        print("Your hand is", list(sorted(self.hand)))
         print("Last played:", self.format_last(rd))
         cards = list(map(self.get_card, input("Enter cards separated by spaces: ").split()))
         return cards

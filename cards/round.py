@@ -32,3 +32,12 @@ class Round:
     @property
     def winner(self):
         return self.players[-1][0]
+
+    def __getitem__(self, item):
+        return self.cards[item]
+
+    def __len__(self):
+        return len(self.cards)
+
+    def __bool__(self):
+        return bool(self.cards)
