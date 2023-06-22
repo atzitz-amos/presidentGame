@@ -44,11 +44,15 @@ class BasePlayer:
     def choose_exchange(self, num):
         raise NotImplementedError("Method `choose_exchange` was not implemented")
 
+    def notifyTurn(self, player):
+        pass
+
     def exchange(self, a, b):
         assert len(a) == len(b)
         for i in range(len(a)):
             self.hand.remove(a[i])
             self.hand.append(b[i])
+
 
     def notifyCard(self, player, cards):
         pass

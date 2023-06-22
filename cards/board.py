@@ -57,7 +57,9 @@ class Board:
                     index = 0
                 continue
 
-            print(f"Turn of player {player}")
+            print(f"<GeneralInfo>: Turn of player {player}")
+            for pl in self.players:
+                pl.notifyTurn(player)
 
             try:
                 cards = player.ask_cards(rd)

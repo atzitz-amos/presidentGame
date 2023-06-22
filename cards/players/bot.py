@@ -144,6 +144,41 @@ class BotPlayer(BasePlayer):
 
     def ask_cards_first(self, rd):
         hand = sorted(self.hand)
-        answer = [x for x in hand if x.value == hand[0].value]
+        print("calculating first move with", hand)
+        hand_amounts = []
+        for karte in hand:
+            try:
+                if karte.value == hand_amounts[-1][0]:
+                    hand_amounts[-1][1] += 1
+                    continue
+            except IndexError:
+                pass
+            hand_amounts.append([karte.value, 1])
+        best_openings = [
+            [CardValue.KING, 4],
+            [CardValue.QUEEN, 4],
+            [CardValue.JACK, 4],
+            [CardValue.TEN, 4],
+            [CardValue.NINE, 4],
+            [CardValue.EIGHT, 4],
+            [CardValue.SEVEN, 4],
+            [CardValue.KING, 3],
+            [CardValue.KING, 2],
+            [CardValue.QUEEN, 3],
+            [CardValue.JACK, 3],
+            [CardValue.KING, 1],
+            [CardValue.QUEEN, 2],
+            [CardValue.JACK, 2],
+            [CardValue.QUEEN, 1],
+            [CardValue.JACK, 1],
+        ]
+
+        for combination in best_openings:
+            if combination in hand_amounts:
+                print(hand_amounts)
+                answer = [x for x in hand if x.value == combination[0]]
+                break
+        else:
+            answer = [x for x in hand if x.value == hand[0].value]
         print("Playing:", answer)
         return answer
