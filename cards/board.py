@@ -73,6 +73,7 @@ class Board:
                 if not all([card in player.hand for card in cards]):
                     raise ValueError("Invalid cards, you do not have all of them")
                 rd.add(cards, player)
+                self.notify_dummies("playerPlayed", player=player, cards=cards)
                 for pl in self.players:
                     pl.notifyCard(player, cards)
             except ValueError as e:
@@ -85,6 +86,7 @@ class Board:
             if player.won:
                 role = self.roles.queue(player)
                 player.assign(role)
+                self.notify_dummies("playerWon", player=player)
 
             if not cards:
                 print(f"{player} folded, {len(rd.folded)} players are now folded")
@@ -95,12 +97,15 @@ class Board:
 
         self.leading_player = rd.winner
         print(f"Round finished, {self.leading_player} takes the round")
+        self.notify_dummies("roundFinished", winner=self.leading_player)
         i = self.players.index(self.leading_player)
 
         not_won = [p for p in self.players if not p.won]
         if len(not_won) == 1:
             not_won[0].assign(self.roles.queue(not_won[0]))
+            self.notify_dummies("playerWon", player=not_won[0])
             print("Game finished")
+            self.notify_dummies("gameFinished")
             print("President:", self.roles.PRESIDENT)
             if self.roles.VICE_PRESIDENT: print("Vice President:", self.roles.VICE_PRESIDENT)
             if self.roles.SERVITOR: print("Servitor:", self.roles.SERVITOR)

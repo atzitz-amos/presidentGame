@@ -1,6 +1,5 @@
 from cards.board import Board
 from cards.players.bot import BotPlayer
-from cards.players.human import CMDHumanPlayer
 
 
 class Game:
@@ -17,9 +16,11 @@ class Game:
 
         self.rounds = []
 
+        self.dummies = []
+
     def start(self):
         for round_num in range(self.rounds_count):
-            self.play_round(Board(self.players), round_num=round_num)
+            self.play_round(Board(self.players, dummies=self.dummies), round_num=round_num)
 
     def play_round(self, board, round_num=0):
         board.deal()
@@ -49,8 +50,11 @@ class Game:
                     except Exception as e:
                         vice_president.notifyError(e)
 
-        board.play()
+        board.play(last_roles=self.rounds[-1].roles if len(self.rounds) else None)
         self.rounds.append(board)
+
+    def register_dummy(self, dummy):
+        self.dummies.append(dummy)
 
 
 if __name__ == '__main__':
