@@ -53,7 +53,6 @@ class BasePlayer:
             self.hand.remove(a[i])
             self.hand.append(b[i])
 
-
     def notifyCard(self, player, cards):
         pass
 

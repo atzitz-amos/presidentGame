@@ -35,7 +35,7 @@ class BotPlayer(BasePlayer):
 
     def ask_cards(self, rd):
         if not rd:
-            return self.ask_cards_first(rd)
+            return self.ask_cards_first()
         answers = self.possible_answers(rd[-1])
         if not answers:
             return []
@@ -142,18 +142,18 @@ class BotPlayer(BasePlayer):
 
         return final_score
 
-    def ask_cards_first(self, rd):
+    def ask_cards_first(self):
         hand = sorted(self.hand)
         print("calculating first move with", hand)
         hand_amounts = []
-        for karte in hand:
+        for card in hand:
             try:
-                if karte.value == hand_amounts[-1][0]:
+                if card.value == hand_amounts[-1][0]:
                     hand_amounts[-1][1] += 1
                     continue
             except IndexError:
                 pass
-            hand_amounts.append([karte.value, 1])
+            hand_amounts.append([card.value, 1])
         best_openings = [
             [CardValue.KING, 4],
             [CardValue.QUEEN, 4],

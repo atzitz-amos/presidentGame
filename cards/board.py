@@ -13,7 +13,9 @@ class NextRound(StopIteration):
 
 class Board:
 
-    def __init__(self, players):
+    def __init__(self, players, dummies=None):
+        if dummies is None:
+            dummies = []
         self.players = players
         self.current_turn = 0
         self.leading_player = None
@@ -24,11 +26,13 @@ class Board:
 
         self.deck = Card.deck()
 
-    def play(self):
+        self.dummies = []
+
+    def play(self, last_roles=None):
         self.playing = True
         try:
             while True:
-                self.play_turn()
+                self.play_turn(leading_player=last_roles.LABOURER if last_roles else None)
         except NextRound:
             return self.roles
 
@@ -39,10 +43,10 @@ class Board:
             player.deal_cards(self.deck[i * amount: (i + 1) * amount])
             print(f"dealt to player {player} cards {self.deck[i * amount: (i + 1) * amount]}")
 
-    def play_turn(self):
+    def play_turn(self, leading_player=None):
         if not self.leading_player:
-            if self.roles.LABOURER:
-                self.leading_player = self.roles.LABOURER
+            if leading_player:
+                self.leading_player = leading_player
             else:
                 self.leading_player = [player for player in self.players if Cards.TEN_OF_HEARTS in player.hand][0]
 
@@ -58,6 +62,7 @@ class Board:
                 continue
 
             print(f"<GeneralInfo>: Turn of player {player}")
+            self.notify_dummies("turnOf", player=player)
             for pl in self.players:
                 pl.notifyTurn(player)
 
@@ -115,6 +120,13 @@ class Board:
     def remove_cards(self, cards):
         for card in cards:
             self.deck.remove(card)
+
+    def notify_dummies(self, event, **kwargs):
+        for dummy in self.dummies:
+            if callable(getattr(dummy, "event", None)):
+                dummy.event(event, **kwargs)
+            if callable(getattr(dummy, "on" + event.title(), None)):
+                getattr(dummy, "on" + event.title())(**kwargs)
 
 
 if __name__ == '__main__':
